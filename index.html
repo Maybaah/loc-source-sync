@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source Sync</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">SS</span>
+    <div>
+      <h1>Source Sync</h1>
+      <p>Bulk source-update triage for localization</p>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span class="privacy">Files stay in your browser. Nothing is uploaded.</span>
+  </div>
+</header>
+
+<section id="loader" class="panel">
+  <div class="drop" id="drop-bulk">
+    <h2>Bulk sheet</h2>
+    <p>The multilingual bulk file with <em>Source String</em> and <em>Previous Source String</em>.</p>
+    <input type="file" id="file-bulk" accept=".xlsx,.xlsm,.xls,.csv">
+    <p class="file-name" id="name-bulk"></p>
+  </div>
+  <div class="drop optional" id="drop-lp">
+    <h2>Language Pass file <span class="tag">optional</span></h2>
+    <p>The full per-language project strings export. Used for glossary lookups.</p>
+    <input type="file" id="file-lp" accept=".xlsx,.xlsm,.xls,.csv">
+    <p class="file-name" id="name-lp"></p>
+  </div>
+</section>
+
+<section id="setup" class="panel hidden">
+  <label for="lang">Target language</label>
+  <select id="lang"></select>
+  <button id="run" class="primary">Analyse</button>
+  <span class="hint" id="setup-hint"></span>
+</section>
+
+<main id="workspace" class="hidden">
+  <nav class="tabs">
+    <button class="tab active" data-tab="triage">Triage</button>
+    <button class="tab" data-tab="qa">QA checks</button>
+    <button class="tab" data-tab="glossary">Glossary</button>
+    <button class="tab" data-tab="export">Export</button>
+  </nav>
+
+  <section class="tab-body" id="tab-triage">
+    <div class="stats" id="stats"></div>
+    <div class="toolbar">
+      <input type="search" id="search" placeholder="Filter by ID, source or translation">
+      <label class="check"><input type="checkbox" id="only-todo"> Only rows needing a new translation</label>
+      <span class="count" id="row-count"></span>
+    </div>
+    <div id="rows" class="rows"></div>
+  </section>
+
+  <section class="tab-body hidden" id="tab-qa">
+    <p class="lead">Every check runs over every row, not only the rows whose source changed.</p>
+    <div id="qa"></div>
+  </section>
+
+  <section class="tab-body hidden" id="tab-glossary">
+    <div class="toolbar">
+      <input type="search" id="gloss-q" placeholder="Search the Language Pass file for a term">
+      <span class="count" id="gloss-count"></span>
+    </div>
+    <div id="gloss" class="rows"></div>
+  </section>
+
+  <section class="tab-body hidden" id="tab-export">
+    <div class="export-grid">
+      <div class="card">
+        <h3>Triage sheet</h3>
+        <p>Resource ID, both sources, current and new translation, verdict and reason. One row per string.</p>
+        <button id="exp-xlsx" class="primary">Download .xlsx</button>
+      </div>
+      <div class="card">
+        <h3>Issues report</h3>
+        <p>Markdown file with every QA finding grouped by check, ready to hand in with the bulk file.</p>
+        <button id="exp-md" class="primary">Download .md</button>
+      </div>
+      <div class="card">
+        <h3>New translation column</h3>
+        <p>Just the target column in sheet order, so it can be pasted straight back into the bulk file.</p>
+        <button id="exp-col" class="primary">Download .csv</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="js/parse.js"></script>
+<script src="js/diff.js"></script>
+<script src="js/classify.js"></script>
+<script src="js/checks.js"></script>
+<script src="js/report.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
