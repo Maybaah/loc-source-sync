@@ -12,15 +12,15 @@ const Report = (() => {
   function triageSheet(entries, lang) {
     const aoa = [[
       'Resource ID', 'Verdict', 'Reason', 'Previous Source String', 'Source String',
-      lang, `${lang} - New Translation`, 'CHAR_LIMIT_1BYTE', 'LINE_LIMIT'
+      lang, `${lang} - New Translation`
     ]];
     entries.forEach(e => aoa.push([
       e.id, Classify.LEVELS[e.verdict].label, e.reasons.join('; '),
-      e.prev, e.source, e.current, e.proposed, e.char1 ?? '', e.lineLimit ?? ''
+      e.prev, e.source, e.current, e.proposed
     ]));
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws['!cols'] = [{ wch: 38 }, { wch: 18 }, { wch: 40 }, { wch: 50 }, { wch: 50 }, { wch: 50 }, { wch: 50 }, { wch: 10 }, { wch: 8 }];
+    ws['!cols'] = [{ wch: 38 }, { wch: 18 }, { wch: 40 }, { wch: 50 }, { wch: 50 }, { wch: 50 }, { wch: 50 }];
     XLSX.utils.book_append_sheet(wb, ws, 'Triage');
     XLSX.writeFile(wb, `source-sync-triage-${stamp()}.xlsx`);
   }

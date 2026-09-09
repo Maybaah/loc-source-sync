@@ -211,7 +211,6 @@ button.primary:hover { background: #3a72e0; }
 .verdict[data-level="cosmetic"] { color: var(--grey); }
 
 .reason { color: var(--muted); font-size: 12px; }
-.limits { margin-left: auto; color: var(--muted); font-size: 11px; font-family: Consolas, monospace; }
 
 .diff {
   background: var(--panel-2);

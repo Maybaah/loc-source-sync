@@ -56,20 +56,18 @@ Tested on the 2026-09-07 bulk (394 rows) across all nine languages in the file.
 
 **Read, but expect noise:**
 
-- **Line does not fit**: measured on the raw string. The engine may wrap or shrink text, so
-  treat it as a shortlist, not a verdict. Confirm in game or with the DTP pass.
-- **Limit metadata looks stale**, reported separately because the English source itself
-  overflows the declared limit. 80 to 98 rows per language here. Report it as MF, do not trim
-  your translation to fit a limit the source ignores.
+- **Whitespace**, **punctuation**, **New Translation repeats the current translation**. Real
+  rules, but low stakes. Skim them at the end of the pass.
+
+The tool does **not** check character or line limits. In game the usable width depends on the
+box the string lands in, and the declared limits do not match it, so a fit check would only
+produce noise. Length stays a human call.
 
 ## Language-specific notes
 
 - **Gender markup.** `{playergender}|gender(masc, fem, neutral)` exists only in the target and is
-  expected. It is filtered out of the placeholder check, and the fit check measures the longest
-  variant rather than the raw markup. A row is only flagged if the syntax itself is broken.
-- **Character limits.** The fit check uses `CHAR_LIMIT_1BYTE`, which is the correct width for
-  Cyrillic. If your language is measured against `CHAR_LIMIT_2BYTE`, halve the numbers in your
-  head. If the file has no limit columns at all, the fit checks are silently skipped.
+  expected. It is filtered out of the placeholder check, and the digit check reads the variants
+  rather than the raw markup. A row is only flagged if the syntax itself is broken.
 - **Punctuation checks are Russian-tuned**: unbalanced `« »`, a straight quote inside guillemets,
   four or more dots, and the ё/е check. French guillemets pass through them, but the narrow
   no-break space before `; : ! ?` is **not** checked. Nothing checks Spanish `¿ ¡`, German quote
@@ -80,8 +78,8 @@ Tested on the 2026-09-07 bulk (394 rows) across all nine languages in the file.
 ## Limits
 
 - Only the Bulk Translation Sheet layout is fully supported. Project Strings / New Strings exports
-  load, but they have no limit columns and no previous source on most rows, so almost everything
-  lands in *Check translation*.
+  load, but they carry no previous source on most rows, so almost everything lands in
+  *Check translation*.
 - Spellcheck, terminology and glossary enforcement are not part of the automated pass. The
   Glossary tab is a lookup, not a check.
 - Everything is per-file and per-session. There is no server, no history, no sharing.

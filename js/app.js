@@ -156,10 +156,6 @@ function rowCard(entry) {
   verdict.dataset.level = entry.verdict;
   head.appendChild(verdict);
   head.appendChild(el('span', 'reason', Diff.escape(entry.reasons.join('; '))));
-  if (entry.char1 || entry.lineLimit) {
-    head.appendChild(el('span', 'limits',
-      (entry.char1 || '?') + ' chars × ' + (entry.lineLimit || '?') + ' lines'));
-  }
   card.appendChild(head);
 
   const diff = el('div', 'diff');

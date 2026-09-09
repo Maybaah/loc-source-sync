@@ -47,8 +47,6 @@ because most real findings sit in rows nobody looked at.
 - digit multiset mismatch between source and target
 - trailing line break present on one side only
 - missing translation, or a translation identical to the English source
-- lines longer than `CHAR_LIMIT_1BYTE` and blocks longer than `LINE_LIMIT`, with rows
-  where the English source overflows too reported separately as stale metadata
 - the same source string translated two different ways
 - source changed but the New Translation cell is left empty
 - New Translation repeating the current translation, which should stay empty instead
@@ -68,9 +66,11 @@ because most real findings sit in rows nobody looked at.
 
 The bulk sheet needs a `Translations` sheet (or a single sheet) with the columns
 `Resource ID`, `Source String`, `Previous Source String` and at least one
-`<Language> - New Translation` column. `CHAR_LIMIT_1BYTE`, `CHAR_LIMIT_2BYTE` and
-`LINE_LIMIT` are used for the fit checks when present. The row that says
-`DO NOT DELETE THIS LINE` is skipped.
+`<Language> - New Translation` column. The row that says `DO NOT DELETE THIS LINE`
+is skipped.
+
+Declared character and line limits are ignored on purpose: in game the real width
+depends on the context the string is drawn in, so the metadata does not hold.
 
 The optional Language Pass file is the full per-language export, used only for
 glossary lookups: search a term and see how it is already rendered, sorted so that

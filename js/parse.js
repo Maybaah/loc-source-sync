@@ -38,10 +38,7 @@ const Parse = (() => {
       id: indexOfHeader(headers, 'Resource ID'),
       source: indexOfHeader(headers, 'Source String'),
       prev: indexOfHeader(headers, 'Previous Source String'),
-      notes: indexOfHeader(headers, 'String Notes'),
-      char1: indexOfHeader(headers, 'CHAR_LIMIT_1BYTE'),
-      char2: indexOfHeader(headers, 'CHAR_LIMIT_2BYTE'),
-      line: indexOfHeader(headers, 'LINE_LIMIT')
+      notes: indexOfHeader(headers, 'String Notes')
     };
     if (col.id < 0 || col.source < 0) throw new Error('No "Resource ID" or "Source String" column found.');
     const langs = languages(headers);
@@ -53,9 +50,6 @@ const Parse = (() => {
       source: clean(r[col.source]),
       prev: col.prev >= 0 ? clean(r[col.prev]) : '',
       notes: col.notes >= 0 ? clean(r[col.notes]) : '',
-      char1: num(r[col.char1]),
-      char2: num(r[col.char2]),
-      lineLimit: num(r[col.line]),
       raw: r
     }));
     return { headers, rows, langs, col };
@@ -76,11 +70,6 @@ const Parse = (() => {
       status: status >= 0 ? clean(r[status]).trim() : ''
     })).filter(e => e.source || e.target);
     return { entries, language: langs.length ? langs[0].name : '' };
-  }
-
-  function num(v) {
-    const n = parseInt(String(v == null ? '' : v).trim(), 10);
-    return Number.isFinite(n) ? n : null;
   }
 
   function targetOf(row, lang) {

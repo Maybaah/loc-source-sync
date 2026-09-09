@@ -7,8 +7,6 @@ const Checks = (() => {
     numbers: { title: 'Digit mismatch between source and target', severity: 'high' },
     trailing: { title: 'Trailing line break mismatch', severity: 'high' },
     missing: { title: 'Missing translation', severity: 'high' },
-    fit: { title: 'Line does not fit the declared limit', severity: 'med' },
-    stale_limit: { title: 'Limit metadata looks stale (the source itself overflows)', severity: 'low' },
     duplicate: { title: 'Same source, different translation', severity: 'med' },
     needs_new: { title: 'Source changed but the New Translation cell is empty', severity: 'med' },
     redundant: { title: 'New Translation repeats the current translation', severity: 'low' },
@@ -80,21 +78,6 @@ const Checks = (() => {
 
         if (tgt.trim() === src.trim() && /[\p{L}]{3,}/u.test(src)) {
           add('untouched_source', entry, 'target equals the English source');
-        }
-
-        const limit = entry.char1 || entry.char2;
-        if (limit) {
-          const lines = flat.split('\n');
-          const over = lines.map((l, n) => ({ n: n + 1, len: l.length })).filter(l => l.len > limit);
-          const srcOver = src.split('\n').some(l => l.length > limit);
-          if (over.length) {
-            const msg = over.map(l => `line ${l.n}: ${l.len}/${limit}`).join(', ');
-            if (srcOver) add('stale_limit', entry, `${msg} (the English source overflows too)`);
-            else add('fit', entry, msg);
-          }
-          if (entry.lineLimit && lines.length > entry.lineLimit) {
-            add('fit', entry, `${lines.length} lines, limit is ${entry.lineLimit}`);
-          }
         }
 
         if (entry.verdict === 'update' && !entry.proposed.trim()) {
