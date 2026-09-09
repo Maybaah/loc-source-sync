@@ -88,5 +88,8 @@ No build step, no dependencies to install.
 
 ## Notes
 
-Typed translations are kept in `localStorage` per file and language, so a reload does
-not lose work in progress. No client content is stored in this repository.
+The whole session survives a reload. The loaded files sit in IndexedDB, the chosen
+language, filters and open tab in `localStorage`, and typed translations in `localStorage`
+per file and language. The page restores all of it on load, and the New check button is the
+only thing that clears it. Everything stays on the machine it was loaded on, and no client
+content is stored in this repository.

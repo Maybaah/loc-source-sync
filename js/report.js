@@ -72,10 +72,14 @@ const Report = (() => {
     download(`source-sync-report-${stamp()}.md`, lines.join('\n'), 'text/markdown;charset=utf-8');
   }
 
-  function columnCsv(entries, lang) {
-    const rows = [[`${lang} - New Translation`]].concat(entries.map(e => [e.proposed]));
+  function columnCsv(entries, lang, bulk) {
+    const edited = new Map(entries.map(e => [e.sheetIndex, e.proposed]));
+    const rows = [[`${lang.name} - New Translation`]];
+    bulk.sheetBody.forEach((r, i) => {
+      rows.push([edited.has(i) ? edited.get(i) : Parse.clean(r[lang.newCol])]);
+    });
     const csv = '\ufeff' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\r\n');
-    download(`source-sync-${lang.toLowerCase().replace(/\s+/g, '-')}-column-${stamp()}.csv`, csv, 'text/csv;charset=utf-8');
+    download(`source-sync-${lang.name.toLowerCase().replace(/\s+/g, '-')}-column-${stamp()}.csv`, csv, 'text/csv;charset=utf-8');
   }
 
   function stamp() { return new Date().toISOString().slice(0, 10); }

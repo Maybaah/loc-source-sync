@@ -8,11 +8,13 @@ const Parse = (() => {
     const grid = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
     if (!grid.length) throw new Error('The sheet is empty.');
     const headers = grid[0].map(header);
-    const body = grid.slice(1).filter(r => {
-      const first = clean(r[0]).trim();
-      return first && !first.startsWith('DO NOT DELETE THIS LINE');
-    });
-    return { headers, body };
+    const sheetBody = grid.slice(1);
+    return { headers, body: sheetBody.filter(r => !skipped(r)), sheetBody };
+  }
+
+  function skipped(row) {
+    const first = clean(row[0]).trim();
+    return !first || first.startsWith('DO NOT DELETE THIS LINE');
   }
 
   function indexOfHeader(headers, name) {
@@ -33,7 +35,7 @@ const Parse = (() => {
   }
 
   function bulk(buffer) {
-    const { headers, body } = readWorkbook(buffer);
+    const { headers, sheetBody } = readWorkbook(buffer);
     const col = {
       id: indexOfHeader(headers, 'Resource ID'),
       source: indexOfHeader(headers, 'Source String'),
@@ -44,15 +46,20 @@ const Parse = (() => {
     const langs = languages(headers);
     if (!langs.length) throw new Error('No "<Language> - New Translation" column found.');
 
-    const rows = body.map((r, i) => ({
-      i,
-      id: clean(r[col.id]).trim(),
-      source: clean(r[col.source]),
-      prev: col.prev >= 0 ? clean(r[col.prev]) : '',
-      notes: col.notes >= 0 ? clean(r[col.notes]) : '',
-      raw: r
-    }));
-    return { headers, rows, langs, col };
+    const rows = [];
+    sheetBody.forEach((r, sheetIndex) => {
+      if (skipped(r)) return;
+      rows.push({
+        i: rows.length,
+        sheetIndex,
+        id: clean(r[col.id]).trim(),
+        source: clean(r[col.source]),
+        prev: col.prev >= 0 ? clean(r[col.prev]) : '',
+        notes: col.notes >= 0 ? clean(r[col.notes]) : '',
+        raw: r
+      });
+    });
+    return { headers, rows, langs, col, sheetBody };
   }
 
   function lp(buffer) {

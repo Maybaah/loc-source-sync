@@ -19,8 +19,17 @@ the repo and open `index.html`.
 5. **Export.** Triage sheet (`.xlsx`), issues report (`.md`), New Translation column (`.csv`).
    The CSV is in sheet order, ready to paste back into the bulk file.
 
-Anything you type into a New Translation box is kept in the browser per file and per language,
-so a reload does not lose work. It is not shared between people or machines.
+## The session is kept
+
+Close the tab, reload, come back tomorrow: the file, the chosen language, your filters, the
+open tab and every translation you typed are still there. Nothing has to be dropped in twice.
+
+It is all held in your own browser, on your own machine, and never sent anywhere. It is also
+not shared with anyone else: your colleague opening the same page sees their own session.
+
+Press **New check** in the top right when you move on to the next file. It asks once, then
+throws the stored file and your drafts away and gives you an empty start screen. That is the
+only thing that clears the session, so use it deliberately.
 
 ## Verdicts
 

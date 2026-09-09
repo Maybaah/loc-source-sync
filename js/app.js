@@ -47,29 +47,37 @@ function wireDrop(dropId, inputId, handler) {
 
 async function loadBulk(file) {
   try {
-    state.bulk = Parse.bulk(await readFile(file));
+    const bytes = await readFile(file);
+    state.bulk = Parse.bulk(bytes);
     state.fileName = file.name;
+    Store.put('bulk', { name: file.name, bytes });
     $('#name-bulk').textContent = file.name + ' · ' + state.bulk.rows.length + ' strings';
-    const select = $('#lang');
-    select.innerHTML = '';
-    state.bulk.langs.forEach((l, i) => {
-      const opt = el('option', null, l.name);
-      opt.value = String(i);
-      select.appendChild(opt);
-    });
-    const guess = state.bulk.langs.findIndex(l => /russian/i.test(l.name));
-    select.value = String(guess >= 0 ? guess : 0);
+    fillLanguages();
     $('#setup').classList.remove('hidden');
-    $('#setup-hint').textContent = state.bulk.langs.length + ' languages in this sheet';
   } catch (err) {
     $('#name-bulk').textContent = '';
     alert('Could not read the bulk file: ' + err.message);
   }
 }
 
+function fillLanguages() {
+  const select = $('#lang');
+  select.innerHTML = '';
+  state.bulk.langs.forEach((l, i) => {
+    const opt = el('option', null, l.name);
+    opt.value = String(i);
+    select.appendChild(opt);
+  });
+  const guess = state.bulk.langs.findIndex(l => /russian/i.test(l.name));
+  select.value = String(guess >= 0 ? guess : 0);
+  $('#setup-hint').textContent = state.bulk.langs.length + ' languages in this sheet';
+}
+
 async function loadLp(file) {
   try {
-    state.lp = Parse.lp(await readFile(file));
+    const bytes = await readFile(file);
+    state.lp = Parse.lp(bytes);
+    Store.put('lp', { name: file.name, bytes });
     $('#name-lp').textContent = file.name + ' · ' + state.lp.entries.length + ' strings';
   } catch (err) {
     $('#name-lp').textContent = '';
@@ -80,6 +88,7 @@ async function loadLp(file) {
 function analyse() {
   const lang = state.bulk.langs[Number($('#lang').value)];
   state.lang = lang;
+  saveUi();
   state.entries = state.bulk.rows.map(row => {
     const target = Parse.targetOf(row, lang);
     const verdict = Classify.row(row, target);
@@ -95,6 +104,66 @@ function analyse() {
   refresh();
   $('#workspace').classList.remove('hidden');
   $('#loader').classList.add('hidden');
+  $('#reset').classList.remove('hidden');
+}
+
+function saveUi() {
+  Store.put('ui', {
+    lang: $('#lang').value,
+    tab: document.querySelector('.tab.active').dataset.tab,
+    query: state.query,
+    onlyTodo: state.onlyTodo,
+    levels: [...state.levels]
+  });
+}
+
+async function restore() {
+  const saved = await Store.get('bulk');
+  if (!saved) return;
+  const ui = (await Store.get('ui')) || {};
+  const lp = await Store.get('lp');
+  try {
+    state.bulk = Parse.bulk(saved.bytes);
+    state.fileName = saved.name;
+  } catch (err) {
+    Store.clear();
+    return;
+  }
+  if (lp) {
+    try {
+      state.lp = Parse.lp(lp.bytes);
+      $('#name-lp').textContent = lp.name + ' · ' + state.lp.entries.length + ' strings';
+    } catch (err) {}
+  }
+  $('#name-bulk').textContent = saved.name + ' · ' + state.bulk.rows.length + ' strings';
+  fillLanguages();
+  if (ui.lang != null && state.bulk.langs[Number(ui.lang)]) $('#lang').value = ui.lang;
+  $('#setup').classList.remove('hidden');
+  if (ui.levels && ui.levels.length) state.levels = new Set(ui.levels);
+  state.query = ui.query || '';
+  state.onlyTodo = !!ui.onlyTodo;
+  $('#search').value = state.query;
+  $('#only-todo').checked = state.onlyTodo;
+  analyse();
+  if (ui.tab) switchTab(ui.tab);
+  $('#restored').textContent = 'Restored from your last session.';
+}
+
+function newCheck() {
+  const button = $('#reset');
+  if (button.dataset.armed !== 'yes') {
+    button.dataset.armed = 'yes';
+    button.textContent = 'Discard and start over?';
+    setTimeout(() => {
+      button.dataset.armed = 'no';
+      button.textContent = 'New check';
+    }, 4000);
+    return;
+  }
+  try {
+    localStorage.removeItem(editsKey());
+  } catch (err) {}
+  Store.clear().then(() => location.reload());
 }
 
 function refresh() {
@@ -118,6 +187,7 @@ function renderStats() {
       state.levels = solo ? new Set(Object.keys(Classify.LEVELS)) : new Set([level]);
       renderStats();
       renderRows();
+      saveUi();
     });
     box.appendChild(stat);
   });
@@ -300,10 +370,12 @@ function switchTab(name) {
 wireDrop('#drop-bulk', '#file-bulk', loadBulk);
 wireDrop('#drop-lp', '#file-lp', loadLp);
 $('#run').addEventListener('click', analyse);
-$('#search').addEventListener('input', e => { state.query = e.target.value; renderRows(); });
-$('#only-todo').addEventListener('change', e => { state.onlyTodo = e.target.checked; renderRows(); });
+$('#search').addEventListener('input', e => { state.query = e.target.value; renderRows(); saveUi(); });
+$('#only-todo').addEventListener('change', e => { state.onlyTodo = e.target.checked; renderRows(); saveUi(); });
 $('#gloss-q').addEventListener('input', renderGlossary);
-document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+$('#reset').addEventListener('click', newCheck);
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => { switchTab(t.dataset.tab); saveUi(); }));
 $('#exp-xlsx').addEventListener('click', () => Report.triageSheet(state.entries, state.lang.name));
 $('#exp-md').addEventListener('click', () => Report.issuesMarkdown(state.entries, state.issues, state.lang.name, state.fileName));
-$('#exp-col').addEventListener('click', () => Report.columnCsv(state.entries, state.lang.name));
+$('#exp-col').addEventListener('click', () => Report.columnCsv(state.entries, state.lang, state.bulk));
+restore();

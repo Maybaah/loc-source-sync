@@ -51,6 +51,10 @@ body {
 .topbar h1 { margin: 0; font-size: 17px; }
 .topbar p { margin: 0; color: var(--muted); font-size: 12px; }
 .privacy { color: var(--muted); font-size: 12px; }
+.restored { color: var(--muted); font-size: 12px; }
+.topbar-right { display: flex; align-items: center; gap: 14px; }
+button.ghost { font-size: 12px; padding: 6px 12px; }
+button.ghost[data-armed="yes"] { border-color: #b4643c; color: #f0b49a; }
 
 .panel {
   display: flex;
