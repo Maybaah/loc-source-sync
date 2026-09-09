@@ -49,7 +49,7 @@ async function loadBulk(file) {
   try {
     state.bulk = Parse.bulk(await readFile(file));
     state.fileName = file.name;
-    $('#name-bulk').textContent = file.name + ' — ' + state.bulk.rows.length + ' strings';
+    $('#name-bulk').textContent = file.name + ' · ' + state.bulk.rows.length + ' strings';
     const select = $('#lang');
     select.innerHTML = '';
     state.bulk.langs.forEach((l, i) => {
@@ -70,7 +70,7 @@ async function loadBulk(file) {
 async function loadLp(file) {
   try {
     state.lp = Parse.lp(await readFile(file));
-    $('#name-lp').textContent = file.name + ' — ' + state.lp.entries.length + ' strings';
+    $('#name-lp').textContent = file.name + ' · ' + state.lp.entries.length + ' strings';
   } catch (err) {
     $('#name-lp').textContent = '';
     alert('Could not read the Language Pass file: ' + err.message);
@@ -168,7 +168,7 @@ function rowCard(entry) {
 
   const target = el('div', 'target');
   target.appendChild(el('div', 'diff-label', 'Current ' + state.lang.name));
-  target.appendChild(el('div', 'cur', Diff.escape(entry.current || '—')));
+  target.appendChild(el('div', 'cur', Diff.escape(entry.current || '-')));
   target.appendChild(el('div', 'diff-label', 'New translation'));
 
   const area = document.createElement('textarea');

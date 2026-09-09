@@ -20,6 +20,11 @@ const Checks = (() => {
 
   const multiset = arr => arr.slice().sort().join('\u0001');
   const list = (s, re) => (String(s || '').match(re) || []);
+  const GENDER = /\{playergender\}\s*\|\s*gender\(([^)]*)\)/gi;
+  const HAS_GENDER = /\{playergender\}\s*\|\s*gender\(/i;
+  const widest = body => body.split(',').reduce((a, b) => b.trim().length > a.length ? b.trim() : a, '');
+  const rendered = s => String(s || '').replace(GENDER, (_, body) => widest(body));
+  const bare = s => String(s || '').replace(GENDER, '');
 
   function run(entries) {
     const found = [];
@@ -33,18 +38,20 @@ const Checks = (() => {
     entries.forEach(entry => {
       const src = entry.source;
       const tgt = entry.target;
+      const gendered = HAS_GENDER.test(tgt);
+      const flat = gendered ? rendered(tgt) : tgt;
 
       if (!tgt.trim()) {
         add('missing', entry, 'No current translation and no new translation.');
       } else {
-        const phS = list(src, PLACEHOLDER);
-        const phT = list(tgt, PLACEHOLDER);
+        const phS = list(gendered ? src.replace(/\{playergender\}/gi, '') : src, PLACEHOLDER);
+        const phT = list(gendered ? bare(tgt) : tgt, PLACEHOLDER);
         if (multiset(phS) !== multiset(phT)) {
           add('placeholder', entry, `source [${phS.join(' ') || 'none'}] vs target [${phT.join(' ') || 'none'}]`);
         }
 
         const nS = list(src, NUMBER);
-        const nT = list(tgt, NUMBER);
+        const nT = list(flat, NUMBER);
         if (multiset(nS) !== multiset(nT)) {
           add('numbers', entry, `source [${nS.join(', ') || 'none'}] vs target [${nT.join(', ') || 'none'}]`);
         }
@@ -77,7 +84,7 @@ const Checks = (() => {
 
         const limit = entry.char1 || entry.char2;
         if (limit) {
-          const lines = tgt.split('\n');
+          const lines = flat.split('\n');
           const over = lines.map((l, n) => ({ n: n + 1, len: l.length })).filter(l => l.len > limit);
           const srcOver = src.split('\n').some(l => l.length > limit);
           if (over.length) {

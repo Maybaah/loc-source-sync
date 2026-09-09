@@ -12,6 +12,9 @@ Everything runs client side. The file is parsed in the browser, nothing is uploa
 anywhere, and the page makes no network calls except loading the spreadsheet parser
 from a CDN.
 
+[GUIDE.md](GUIDE.md) is the short how-to for translators, including which findings to trust
+and the per-language caveats.
+
 ## Why
 
 A bulk source update usually looks like a few hundred rows where the source string

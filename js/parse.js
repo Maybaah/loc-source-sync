@@ -1,15 +1,16 @@
 const Parse = (() => {
   const clean = v => String(v == null ? '' : v).replace(/_x000D_/g, '').replace(/\r\n?/g, '\n');
+  const header = h => clean(h).replace(/\s+/g, ' ').replace(/\s*\((?:editable|read.only)\)$/i, '').trim();
 
   function readWorkbook(buffer) {
     const wb = XLSX.read(buffer, { type: 'array' });
     const sheet = wb.Sheets['Translations'] || wb.Sheets[wb.SheetNames[0]];
     const grid = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
     if (!grid.length) throw new Error('The sheet is empty.');
-    const headers = grid[0].map(h => clean(h).trim());
+    const headers = grid[0].map(header);
     const body = grid.slice(1).filter(r => {
       const first = clean(r[0]).trim();
-      return first && first !== 'DO NOT DELETE THIS LINE';
+      return first && !first.startsWith('DO NOT DELETE THIS LINE');
     });
     return { headers, body };
   }
@@ -22,7 +23,11 @@ const Parse = (() => {
     const found = [];
     headers.forEach((h, i) => {
       const m = h.match(/^(.+?)\s*-\s*New Translation$/i);
-      if (m) found.push({ name: m[1].trim(), newCol: i, curCol: indexOfHeader(headers, m[1].trim()) });
+      if (m) {
+        const name = m[1].trim();
+        const cur = indexOfHeader(headers, name);
+        found.push({ name, newCol: i, curCol: cur >= 0 ? cur : indexOfHeader(headers, 'Current Translation') });
+      }
     });
     return found;
   }
