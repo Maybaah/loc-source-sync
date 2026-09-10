@@ -19,7 +19,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font: 14px/1.5 "Segoe UI", system-ui, sans-serif;
+  font: 14px/1.5 Helvetica, "Helvetica Neue", Arial, sans-serif;
 }
 
 .hidden { display: none !important; }
@@ -198,7 +198,7 @@ button.primary:hover { background: #3a72e0; }
   margin-bottom: 8px;
 }
 
-.rid { font-family: Consolas, monospace; font-size: 12px; color: var(--muted); }
+.rid { font-family: Helvetica, "Helvetica Neue", Arial, sans-serif; font-size: 12px; color: var(--muted); }
 
 .verdict {
   font-size: 11px;
